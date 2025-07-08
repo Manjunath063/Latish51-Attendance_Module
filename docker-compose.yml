@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: attendance-postgres
+    ports:
+      - "5492:5432"
+    environment:
+      POSTGRES_DB: employee_attendance
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./Backend
+    container_name: attendance-backend
+    ports:
+      - "3092:3092"
+    environment:
+      PORT: 3092
+      DB_USER: postgres
+      DB_HOST: postgres
+      DB_NAME: employee_attendance
+      DB_PASSWORD: admin123
+      DB_PORT: 5432
+    depends_on:
+      - postgres
+
+  employee_portal:
+    build: ./Employee_Portal
+    container_name: attendance-employee
+    ports:
+      - "8185:80"
+    depends_on:
+      - backend
+
+  hr_portal:
+    build: ./HR_Portal
+    container_name: attendance-hr
+    ports:
+      - "8186:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+
